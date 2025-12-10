@@ -1,3 +1,5 @@
+import TypingTest from "@/components/typing-test";
+
 export default function HomePage() {
-  return <h1>Hello, World!</h1>;
+  return <TypingTest />;
 }
