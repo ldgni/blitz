@@ -13,7 +13,10 @@ export default function TypingTest() {
   );
   const [timeLeft, setTimeLeft] = useState(DURATION);
   const [isRunning, setIsRunning] = useState(false);
+  const [wpm, setWpm] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const wpmRef = useRef<NodeJS.Timeout | null>(null);
+  const startTimeRef = useRef<number | null>(null);
 
   const isComplete = typed.length >= TEXT.length;
   const isGameOver = timeLeft === 0 || isComplete;
@@ -30,6 +33,21 @@ export default function TypingTest() {
     };
   }, [isRunning, isComplete, timeLeft]);
 
+  // WPM calculation every 100ms
+  useEffect(() => {
+    if (isRunning && !isGameOver) {
+      wpmRef.current = setInterval(() => {
+        if (!startTimeRef.current) return;
+        const minutes = (Date.now() - startTimeRef.current) / 60000;
+        const correctChars = typed.filter((t) => t.correct).length;
+        setWpm(minutes > 0 ? Math.round(correctChars / 5 / minutes) : 0);
+      }, 100);
+    }
+    return () => {
+      if (wpmRef.current) clearInterval(wpmRef.current);
+    };
+  }, [isRunning, isGameOver, typed]);
+
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       // Ignore keyboard shortcuts
@@ -41,7 +59,10 @@ export default function TypingTest() {
         setTyped((prev) => prev.slice(0, -1));
       } else if (e.key.length === 1) {
         // Start timer on first character
-        if (!isRunning) setIsRunning(true);
+        if (!isRunning) {
+          setIsRunning(true);
+          startTimeRef.current = Date.now();
+        }
         // Only handle printable characters (length === 1)
         setTyped((prev) =>
           prev.length < TEXT.length
@@ -59,6 +80,8 @@ export default function TypingTest() {
     setTyped([]);
     setTimeLeft(DURATION);
     setIsRunning(false);
+    setWpm(0);
+    startTimeRef.current = null;
   };
 
   return (
@@ -84,6 +107,7 @@ export default function TypingTest() {
       </p>
       <div className="flex w-full justify-end gap-4">
         <span className="text-muted-foreground tabular-nums">{timeLeft}s</span>
+        <span className="text-muted-foreground tabular-nums">{wpm} WPM</span>
         <button
           onMouseDown={(e) => {
             e.preventDefault();
