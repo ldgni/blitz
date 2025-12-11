@@ -8,17 +8,13 @@ const TEXT =
 const DURATION = 30;
 
 export default function TypingTest() {
-  const [typed, setTyped] = useState<Array<{ char: string; correct: boolean }>>(
-    [],
-  );
+  const [typed, setTyped] = useState<boolean[]>([]);
   const [timeLeft, setTimeLeft] = useState(DURATION);
   const [isRunning, setIsRunning] = useState(false);
   const [wpm, setWpm] = useState(0);
   const [totalKeystrokes, setTotalKeystrokes] = useState(0);
   const [errors, setErrors] = useState(0);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const wpmRef = useRef<NodeJS.Timeout | null>(null);
-  const startTimeRef = useRef<number | null>(null);
+  const startTimeRef = useRef<number>(0);
 
   const isComplete = typed.length >= TEXT.length;
   const isGameOver = timeLeft === 0 || isComplete;
@@ -29,62 +25,56 @@ export default function TypingTest() {
 
   // Timer countdown
   useEffect(() => {
-    if (isRunning && timeLeft > 0 && !isComplete) {
-      timerRef.current = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
-      }, 1000);
-    }
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [isRunning, isComplete, timeLeft]);
+    if (!isRunning || isGameOver) return;
 
-  // WPM calculation every 100ms
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => Math.max(0, prev - 1));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isRunning, isGameOver]);
+
+  // WPM update
   useEffect(() => {
-    if (isRunning && !isGameOver) {
-      wpmRef.current = setInterval(() => {
-        if (!startTimeRef.current) return;
-        const minutes = (Date.now() - startTimeRef.current) / 60000;
-        const correctChars = typed.filter((t) => t.correct).length;
-        setWpm(minutes > 0 ? Math.round(correctChars / 5 / minutes) : 0);
-      }, 100);
-    }
-    return () => {
-      if (wpmRef.current) clearInterval(wpmRef.current);
-    };
+    if (!isRunning || isGameOver) return;
+
+    const interval = setInterval(() => {
+      const minutes = (Date.now() - startTimeRef.current) / 60000;
+      const correctChars = typed.filter(Boolean).length;
+      setWpm(minutes > 0 ? Math.round(correctChars / 5 / minutes) : 0);
+    }, 100);
+
+    return () => clearInterval(interval);
   }, [isRunning, isGameOver, typed]);
 
+  // Keyboard input
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      // Ignore keyboard shortcuts
       if (e.ctrlKey || e.altKey || e.metaKey) return;
-      // Block input when game is over
       if (isGameOver) return;
 
       if (e.key === "Backspace") {
         setTyped((prev) => prev.slice(0, -1));
       } else if (e.key.length === 1) {
-        // Start timer on first character
         if (!isRunning) {
           setIsRunning(true);
           startTimeRef.current = Date.now();
         }
-        // Track raw accuracy
+
         setTotalKeystrokes((prev) => prev + 1);
-        const isCorrect = e.key === TEXT[typed.length];
-        if (!isCorrect) setErrors((prev) => prev + 1);
-        // Only handle printable characters (length === 1)
-        setTyped((prev) =>
-          prev.length < TEXT.length
-            ? [...prev, { char: e.key, correct: isCorrect }]
-            : prev,
-        );
+
+        setTyped((prev) => {
+          if (prev.length >= TEXT.length) return prev;
+          const isCorrect = e.key === TEXT[prev.length];
+          if (!isCorrect) setErrors((err) => err + 1);
+          return [...prev, isCorrect];
+        });
       }
     };
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isRunning, isGameOver, typed.length]);
+  }, [isRunning, isGameOver]);
 
   const restart = () => {
     setTyped([]);
@@ -93,7 +83,7 @@ export default function TypingTest() {
     setErrors(0);
     setIsRunning(false);
     setWpm(0);
-    startTimeRef.current = null;
+    startTimeRef.current = 0;
   };
 
   return (
@@ -107,7 +97,7 @@ export default function TypingTest() {
             <span
               className={
                 i < typed.length
-                  ? typed[i].correct
+                  ? typed[i]
                     ? "text-foreground"
                     : "text-red-500"
                   : "text-muted-foreground/50"
