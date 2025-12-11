@@ -14,12 +14,18 @@ export default function TypingTest() {
   const [timeLeft, setTimeLeft] = useState(DURATION);
   const [isRunning, setIsRunning] = useState(false);
   const [wpm, setWpm] = useState(0);
+  const [totalKeystrokes, setTotalKeystrokes] = useState(0);
+  const [errors, setErrors] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const wpmRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number | null>(null);
 
   const isComplete = typed.length >= TEXT.length;
   const isGameOver = timeLeft === 0 || isComplete;
+  const accuracy =
+    totalKeystrokes > 0
+      ? Math.round(((totalKeystrokes - errors) / totalKeystrokes) * 100)
+      : 100;
 
   // Timer countdown
   useEffect(() => {
@@ -63,10 +69,14 @@ export default function TypingTest() {
           setIsRunning(true);
           startTimeRef.current = Date.now();
         }
+        // Track raw accuracy
+        setTotalKeystrokes((prev) => prev + 1);
+        const isCorrect = e.key === TEXT[typed.length];
+        if (!isCorrect) setErrors((prev) => prev + 1);
         // Only handle printable characters (length === 1)
         setTyped((prev) =>
           prev.length < TEXT.length
-            ? [...prev, { char: e.key, correct: e.key === TEXT[prev.length] }]
+            ? [...prev, { char: e.key, correct: isCorrect }]
             : prev,
         );
       }
@@ -74,11 +84,13 @@ export default function TypingTest() {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isRunning, isGameOver]);
+  }, [isRunning, isGameOver, typed.length]);
 
   const restart = () => {
     setTyped([]);
     setTimeLeft(DURATION);
+    setTotalKeystrokes(0);
+    setErrors(0);
     setIsRunning(false);
     setWpm(0);
     startTimeRef.current = null;
@@ -107,6 +119,7 @@ export default function TypingTest() {
       </p>
       <div className="flex w-full justify-end gap-4">
         <span className="text-muted-foreground tabular-nums">{timeLeft}s</span>
+        <span className="text-muted-foreground tabular-nums">{accuracy}%</span>
         <span className="text-muted-foreground tabular-nums">{wpm} WPM</span>
         <button
           onMouseDown={(e) => {
