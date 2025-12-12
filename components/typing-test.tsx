@@ -99,7 +99,7 @@ export default function TypingTest() {
                 i < typed.length
                   ? typed[i]
                     ? "text-foreground"
-                    : "text-red-500"
+                    : "text-destructive"
                   : "text-muted-foreground/50"
               }>
               {char}
