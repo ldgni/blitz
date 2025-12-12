@@ -87,7 +87,7 @@ export default function TypingTest() {
   };
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center gap-8 p-4 text-2xl">
+    <div className="space-y-4 text-xl sm:text-2xl">
       <p className="leading-relaxed font-medium tracking-wide">
         {TEXT.split("").map((char, i) => (
           <span key={i} className="relative">
@@ -107,7 +107,7 @@ export default function TypingTest() {
           </span>
         ))}
       </p>
-      <div className="flex w-full justify-end gap-4">
+      <div className="flex w-full justify-center gap-4 sm:justify-end">
         <span className="text-muted-foreground tabular-nums">{timeLeft}s</span>
         <span className="text-muted-foreground tabular-nums">{accuracy}%</span>
         <span className="text-muted-foreground tabular-nums">{wpm} WPM</span>
