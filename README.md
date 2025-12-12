@@ -1,6 +1,6 @@
 # Blitz
 
-> Typing speed test app
+> Typing test
 
 ## Running Locally
 
