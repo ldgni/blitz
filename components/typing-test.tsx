@@ -1,6 +1,9 @@
 "use client";
 
+import { Geist_Mono } from "next/font/google";
 import { useEffect, useRef, useState } from "react";
+
+const geistMono = Geist_Mono({ subsets: ["latin"] });
 
 const TEXT =
   "The quick brown fox jumps over the lazy dog. This classic pangram contains every letter of the alphabet at least once. Typing exercises help us master keyboard layouts and improve our communication skills.";
@@ -15,6 +18,9 @@ export default function TypingTest() {
   const [totalKeystrokes, setTotalKeystrokes] = useState(0);
   const [errors, setErrors] = useState(0);
   const startTimeRef = useRef<number>(0);
+  const [cursorPos, setCursorPos] = useState({ left: 0, top: 0 });
+  const charRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const containerRef = useRef<HTMLParagraphElement>(null);
 
   const isComplete = typed.length >= TEXT.length;
   const isGameOver = timeLeft === 0 || isComplete;
@@ -46,6 +52,26 @@ export default function TypingTest() {
 
     return () => clearInterval(interval);
   }, [isRunning, isGameOver, typed]);
+
+  // Update cursor position
+  useEffect(() => {
+    const updateCursorPos = () => {
+      const index = typed.length;
+      const charEl = charRefs.current[index];
+      const container = containerRef.current;
+      if (charEl && container) {
+        const containerRect = container.getBoundingClientRect();
+        const charRect = charEl.getBoundingClientRect();
+        setCursorPos({
+          left: charRect.left - containerRect.left,
+          top: charRect.top - containerRect.top,
+        });
+      }
+    };
+    updateCursorPos();
+    window.addEventListener("resize", updateCursorPos);
+    return () => window.removeEventListener("resize", updateCursorPos);
+  }, [typed.length]);
 
   // Keyboard input
   useEffect(() => {
@@ -83,27 +109,39 @@ export default function TypingTest() {
     setErrors(0);
     setIsRunning(false);
     setWpm(0);
-    startTimeRef.current = 0;
   };
 
   return (
     <div className="space-y-4 text-xl sm:text-2xl">
-      <p className="leading-relaxed font-medium tracking-wide">
+      <p
+        ref={containerRef}
+        className={`relative leading-relaxed font-medium tracking-wide ${geistMono.className}`}>
+        {!isGameOver && (
+          <span
+            className={`absolute w-0.5 bg-orange-500 transition-all ease-out ${
+              !isRunning ? "animate-blink" : ""
+            }`}
+            style={{
+              left: cursorPos.left,
+              top: cursorPos.top,
+              height: "1.25em",
+            }}
+          />
+        )}
         {TEXT.split("").map((char, i) => (
-          <span key={i} className="relative">
-            {i === typed.length && !isGameOver && (
-              <span className="animate-blink absolute top-0 -left-px h-full w-1 bg-orange-500" />
-            )}
-            <span
-              className={
-                i < typed.length
-                  ? typed[i]
-                    ? "text-foreground"
-                    : "text-destructive"
-                  : "text-muted-foreground/50"
-              }>
-              {char}
-            </span>
+          <span
+            key={i}
+            ref={(el) => {
+              charRefs.current[i] = el;
+            }}
+            className={`transition-colors ${
+              i < typed.length
+                ? typed[i]
+                  ? "text-foreground"
+                  : "text-destructive"
+                : "text-muted-foreground/50"
+            }`}>
+            {char}
           </span>
         ))}
       </p>
