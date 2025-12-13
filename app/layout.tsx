@@ -3,8 +3,6 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 
-import Footer from "@/components/footer";
-import Header from "@/components/header";
 import { ThemeProvider } from "@/components/theme-provider";
 
 const geist = Geist({ subsets: ["latin"] });
@@ -27,10 +25,8 @@ export default function RootLayout({
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange>
-          <div className="mx-auto flex min-h-screen max-w-2xl flex-col p-4">
-            <Header />
-            <main className="grow">{children}</main>
-            <Footer />
+          <div className="mx-auto flex min-h-screen max-w-4xl flex-col justify-center p-4">
+            <main>{children}</main>
           </div>
         </ThemeProvider>
       </body>
