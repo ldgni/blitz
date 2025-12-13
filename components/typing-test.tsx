@@ -26,7 +26,10 @@ export default function TypingTest() {
   const isGameOver = timeLeft === 0 || isComplete;
   const accuracy =
     totalKeystrokes > 0
-      ? Math.round(((totalKeystrokes - errors) / totalKeystrokes) * 100)
+      ? Math.max(
+          0,
+          Math.round(((totalKeystrokes - errors) / totalKeystrokes) * 100),
+        )
       : 100;
 
   // Timer countdown
@@ -87,20 +90,19 @@ export default function TypingTest() {
           startTimeRef.current = Date.now();
         }
 
-        setTotalKeystrokes((prev) => prev + 1);
+        const currentIndex = typed.length;
+        if (currentIndex >= TEXT.length) return;
 
-        setTyped((prev) => {
-          if (prev.length >= TEXT.length) return prev;
-          const isCorrect = e.key === TEXT[prev.length];
-          if (!isCorrect) setErrors((err) => err + 1);
-          return [...prev, isCorrect];
-        });
+        const isCorrect = e.key === TEXT[currentIndex];
+        setTotalKeystrokes((prev) => prev + 1);
+        if (!isCorrect) setErrors((prev) => prev + 1);
+        setTyped((prev) => [...prev, isCorrect]);
       }
     };
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isRunning, isGameOver]);
+  }, [isRunning, isGameOver, typed.length]);
 
   const restart = () => {
     setTyped([]);
