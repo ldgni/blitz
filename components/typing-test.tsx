@@ -145,7 +145,10 @@ export default function TypingTest() {
           </span>
         ))}
       </p>
-      <div className="flex w-full justify-center gap-4 sm:justify-end">
+      <div
+        className={`flex w-full justify-center gap-4 transition-opacity sm:justify-end ${
+          isRunning ? "opacity-100" : "opacity-0"
+        }`}>
         <span className="text-muted-foreground tabular-nums">{timeLeft}s</span>
         <span className="text-muted-foreground tabular-nums">{accuracy}%</span>
         <span className="text-muted-foreground tabular-nums">{wpm} WPM</span>
