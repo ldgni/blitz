@@ -38,7 +38,7 @@ export default function TypingTest() {
 
   return (
     <div className="space-y-4 text-xl sm:text-2xl">
-      <div className="flex gap-1">
+      <div className="flex gap-2">
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -101,7 +101,7 @@ export default function TypingTest() {
         ))}
       </p>
       <div
-        className={`flex w-full justify-center gap-4 transition-opacity sm:justify-end ${
+        className={`flex justify-end gap-4 transition-opacity ${
           isRunning ? "opacity-100" : "pointer-events-none opacity-0"
         }`}>
         <span className="text-muted-foreground tabular-nums">{timeLeft}s</span>
