@@ -1,13 +1,31 @@
 "use client";
 
-import { RotateCcw } from "lucide-react";
+import { Howl } from "howler";
+import { RotateCcw, Volume2, VolumeOff } from "lucide-react";
 import { Geist_Mono } from "next/font/google";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 const geistMono = Geist_Mono({ subsets: ["latin"] });
+
+// Preload sounds
+const pressSounds = {
+  generic: [0, 1, 2, 3, 4].map(
+    (i) => new Howl({ src: [`/sounds/press/GENERIC_R${i}.mp3`] }),
+  ),
+  space: new Howl({ src: ["/sounds/press/SPACE.mp3"] }),
+  backspace: new Howl({ src: ["/sounds/press/BACKSPACE.mp3"] }),
+  enter: new Howl({ src: ["/sounds/press/ENTER.mp3"] }),
+};
+
+const releaseSounds = {
+  generic: new Howl({ src: ["/sounds/release/GENERIC.mp3"] }),
+  space: new Howl({ src: ["/sounds/release/SPACE.mp3"] }),
+  backspace: new Howl({ src: ["/sounds/release/BACKSPACE.mp3"] }),
+  enter: new Howl({ src: ["/sounds/release/ENTER.mp3"] }),
+};
 
 const TEXT =
   "The quick brown fox jumps over the lazy dog. This classic pangram contains every letter of the alphabet at least once. Typing exercises help us master keyboard layouts and improve our communication skills.";
@@ -25,6 +43,43 @@ export default function TypingTest() {
   const [cursorPos, setCursorPos] = useState({ left: 0, top: 0 });
   const charRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const containerRef = useRef<HTMLParagraphElement>(null);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+
+  const playPressSound = useCallback(
+    (key: string) => {
+      if (!soundEnabled) return;
+      if (key === " ") {
+        pressSounds.space.play();
+      } else if (key === "Backspace") {
+        pressSounds.backspace.play();
+      } else if (key === "Enter") {
+        pressSounds.enter.play();
+      } else if (key.length === 1) {
+        const randomSound =
+          pressSounds.generic[
+            Math.floor(Math.random() * pressSounds.generic.length)
+          ];
+        randomSound.play();
+      }
+    },
+    [soundEnabled],
+  );
+
+  const playReleaseSound = useCallback(
+    (key: string) => {
+      if (!soundEnabled) return;
+      if (key === " ") {
+        releaseSounds.space.play();
+      } else if (key === "Backspace") {
+        releaseSounds.backspace.play();
+      } else if (key === "Enter") {
+        releaseSounds.enter.play();
+      } else if (key.length === 1) {
+        releaseSounds.generic.play();
+      }
+    },
+    [soundEnabled],
+  );
 
   const isComplete = typed.length >= TEXT.length;
   const isGameOver = timeLeft === 0 || isComplete;
@@ -86,6 +141,8 @@ export default function TypingTest() {
       if (e.ctrlKey || e.altKey || e.metaKey) return;
       if (isGameOver) return;
 
+      playPressSound(e.key);
+
       if (e.key === "Backspace") {
         setTyped((prev) => prev.slice(0, -1));
       } else if (e.key.length === 1) {
@@ -104,9 +161,19 @@ export default function TypingTest() {
       }
     };
 
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.altKey || e.metaKey) return;
+      if (isGameOver) return;
+      playReleaseSound(e.key);
+    };
+
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isRunning, isGameOver, typed.length]);
+    window.addEventListener("keyup", onKeyUp);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+    };
+  }, [isRunning, isGameOver, typed.length, playPressSound, playReleaseSound]);
 
   const restart = () => {
     setTyped([]);
@@ -119,24 +186,38 @@ export default function TypingTest() {
 
   return (
     <div className="space-y-4 text-xl sm:text-2xl">
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Restart"
-            className={
-              isRunning ? "opacity-100" : "pointer-events-none opacity-0"
-            }
-            onMouseDown={(e) => {
-              e.preventDefault();
-              restart();
-            }}>
-            <RotateCcw />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>Restart</TooltipContent>
-      </Tooltip>
+      <div className="flex gap-1">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Restart"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                restart();
+              }}>
+              <RotateCcw />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Restart</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={soundEnabled ? "Mute sounds" : "Unmute sounds"}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                setSoundEnabled((prev) => !prev);
+              }}>
+              {soundEnabled ? <Volume2 /> : <VolumeOff />}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{soundEnabled ? "Mute" : "Unmute"}</TooltipContent>
+        </Tooltip>
+      </div>
       <p
         ref={containerRef}
         className={`relative leading-relaxed font-medium tracking-wide ${geistMono.className}`}>
