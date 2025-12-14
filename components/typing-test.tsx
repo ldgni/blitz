@@ -75,7 +75,7 @@ export default function TypingTest() {
         className={`relative leading-relaxed font-medium tracking-wide ${geistMono.className}`}>
         {!isGameOver && (
           <span
-            className={`absolute w-0.5 bg-orange-500 transition-all duration-75 ease-out ${
+            className={`absolute w-0.5 bg-orange-500 transition-all duration-75 ${
               !isRunning ? "animate-blink" : ""
             }`}
             style={{
