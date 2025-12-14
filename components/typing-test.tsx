@@ -54,7 +54,7 @@ export default function TypingTest() {
                 <RotateCcw />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Restart</TooltipContent>
+            <TooltipContent>Restart game</TooltipContent>
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -69,7 +69,9 @@ export default function TypingTest() {
                 {soundEnabled ? <Volume2 /> : <VolumeOff />}
               </Button>
             </TooltipTrigger>
-            <TooltipContent>{soundEnabled ? "Mute" : "Unmute"}</TooltipContent>
+            <TooltipContent>
+              {soundEnabled ? "Mute sounds" : "Unmute sounds"}
+            </TooltipContent>
           </Tooltip>
           <ModeToggle />
         </div>
@@ -78,7 +80,10 @@ export default function TypingTest() {
           size="icon"
           aria-label="View source on GitHub"
           asChild>
-          <a href="https://github.com/ldgni/blitz" target="_blank">
+          <a
+            href="https://github.com/ldgni/blitz"
+            target="_blank"
+            onMouseDown={(e) => e.preventDefault()}>
             <Github />
           </a>
         </Button>
