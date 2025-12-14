@@ -1,7 +1,11 @@
 "use client";
 
+import { RotateCcw } from "lucide-react";
 import { Geist_Mono } from "next/font/google";
 import { useEffect, useRef, useState } from "react";
+
+import { Button } from "./ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 const geistMono = Geist_Mono({ subsets: ["latin"] });
 
@@ -115,6 +119,24 @@ export default function TypingTest() {
 
   return (
     <div className="space-y-4 text-xl sm:text-2xl">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Restart"
+            className={
+              isRunning ? "opacity-100" : "pointer-events-none opacity-0"
+            }
+            onMouseDown={(e) => {
+              e.preventDefault();
+              restart();
+            }}>
+            <RotateCcw />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Restart</TooltipContent>
+      </Tooltip>
       <p
         ref={containerRef}
         className={`relative leading-relaxed font-medium tracking-wide ${geistMono.className}`}>
@@ -149,19 +171,11 @@ export default function TypingTest() {
       </p>
       <div
         className={`flex w-full justify-center gap-4 transition-opacity sm:justify-end ${
-          isRunning ? "opacity-100" : "opacity-0"
+          isRunning ? "opacity-100" : "pointer-events-none opacity-0"
         }`}>
         <span className="text-muted-foreground tabular-nums">{timeLeft}s</span>
         <span className="text-muted-foreground tabular-nums">{accuracy}%</span>
         <span className="text-muted-foreground tabular-nums">{wpm} WPM</span>
-        <button
-          onMouseDown={(e) => {
-            e.preventDefault();
-            restart();
-          }}
-          className="text-muted-foreground hover:text-foreground transition-colors">
-          Restart
-        </button>
       </div>
     </div>
   );
