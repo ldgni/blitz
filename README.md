@@ -1,6 +1,6 @@
 # Blitz
 
-> Typing test
+> Typing test measuring speed and accuracy
 
 ## Running Locally
 
