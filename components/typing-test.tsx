@@ -3,6 +3,7 @@
 import { Github, RotateCcw, Volume2, VolumeOff } from "lucide-react";
 import { Geist_Mono } from "next/font/google";
 
+import ModeToggle from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -38,51 +39,56 @@ export default function TypingTest() {
 
   return (
     <div className="space-y-4 text-xl sm:text-2xl">
-      <div className="space-x-2">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Restart"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                restart();
-              }}>
-              <RotateCcw />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Restart game</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={soundEnabled ? "Mute sounds" : "Unmute sounds"}
-              onMouseDown={(e) => {
-                e.preventDefault();
-                setSoundEnabled((prev) => !prev);
-              }}>
-              {soundEnabled ? <Volume2 /> : <VolumeOff />}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            {soundEnabled ? "Mute sounds" : "Unmute sounds"}
-          </TooltipContent>
-        </Tooltip>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label="View source on GitHub"
-          asChild>
-          <a
-            href="https://github.com/ldgni/blitz"
-            target="_blank"
-            onMouseDown={(e) => e.preventDefault()}>
-            <Github />
-          </a>
-        </Button>
+      <div className="flex justify-between">
+        <div className="space-x-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Restart"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  restart();
+                }}>
+                <RotateCcw />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Restart game</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={soundEnabled ? "Mute sounds" : "Unmute sounds"}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  setSoundEnabled((prev) => !prev);
+                }}>
+                {soundEnabled ? <Volume2 /> : <VolumeOff />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {soundEnabled ? "Mute sounds" : "Unmute sounds"}
+            </TooltipContent>
+          </Tooltip>
+        </div>
+        <div className="space-x-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="View source on GitHub"
+            asChild>
+            <a
+              href="https://github.com/ldgni/blitz"
+              target="_blank"
+              onMouseDown={(e) => e.preventDefault()}>
+              <Github />
+            </a>
+          </Button>
+          <ModeToggle />
+        </div>
       </div>
       <p
         ref={containerRef}
