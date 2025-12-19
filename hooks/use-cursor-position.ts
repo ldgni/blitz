@@ -17,19 +17,25 @@ export function useCursorPosition(currentIndex: number) {
 
   useEffect(() => {
     const updateCursorPos = () => {
-      const charEl = charRefs.current[currentIndex];
       const container = containerRef.current;
-      if (charEl && container) {
+      if (!container) return;
+
+      const charEl = charRefs.current[currentIndex];
+      if (charEl) {
         const containerRect = container.getBoundingClientRect();
         const charRect = charEl.getBoundingClientRect();
         setCursorPos({
           left: charRect.left - containerRect.left,
           top: charRect.top - containerRect.top,
         });
+      } else if (currentIndex === 0) {
+        // Handle start of text - position cursor at beginning
+        setCursorPos({ left: 0, top: 0 });
       }
     };
 
-    updateCursorPos();
+    // Use requestAnimationFrame to ensure DOM is updated
+    requestAnimationFrame(updateCursorPos);
     window.addEventListener("resize", updateCursorPos);
     return () => window.removeEventListener("resize", updateCursorPos);
   }, [currentIndex]);

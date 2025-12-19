@@ -63,10 +63,9 @@ export function useTypingGame({
       if (e.ctrlKey || e.altKey || e.metaKey) return;
       if (isGameOver) return;
 
-      onKeyDown?.(e.key);
-
       if (e.key === "Backspace") {
         setTyped((prev) => prev.slice(0, -1));
+        onKeyDown?.(e.key);
       } else if (e.key.length === 1) {
         if (!isRunning) {
           setIsRunning(true);
@@ -76,6 +75,7 @@ export function useTypingGame({
         const currentIndex = typed.length;
         if (currentIndex >= text.length) return;
 
+        onKeyDown?.(e.key);
         const isCorrect = e.key === text[currentIndex];
         setTotalKeystrokes((prev) => prev + 1);
         if (!isCorrect) setErrors((prev) => prev + 1);

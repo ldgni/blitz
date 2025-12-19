@@ -1,7 +1,8 @@
 "use client";
 
-import { Github, RotateCcw, Volume2, VolumeOff } from "lucide-react";
+import { FileText, Github, RotateCcw, Volume2, VolumeOff } from "lucide-react";
 import { Geist_Mono } from "next/font/google";
+import { useState } from "react";
 
 import ModeToggle from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
@@ -16,18 +17,24 @@ import { useTypingSounds } from "@/hooks/use-typing-sounds";
 
 const geistMono = Geist_Mono({ subsets: ["latin"] });
 
-const TEXT =
-  "The quick brown fox jumps over the lazy dog. This classic pangram contains every letter of the alphabet at least once. Typing exercises help us master keyboard layouts and improve our communication skills.";
+const TEXT_PRESETS = [
+  "The quick brown fox jumps over the lazy dog. This classic pangram contains every letter of the alphabet at least once. Typing exercises help us master keyboard layouts and improve our communication skills.",
+  "Programming is the art of telling a computer what to do through precise instructions. Code is written in languages that humans can learn and machines can execute. Practice makes perfect when learning any new skill.",
+  "Technology evolves rapidly, bringing new tools and possibilities every day. Learning to adapt and grow with these changes is essential. Curiosity and persistence are key to mastering any field.",
+];
 
 const DURATION = 30;
 
 export default function TypingTest() {
+  const [textIndex, setTextIndex] = useState(0);
+  const currentText = TEXT_PRESETS[textIndex];
+
   const { soundEnabled, setSoundEnabled, playPressSound, playReleaseSound } =
     useTypingSounds();
 
   const { typed, timeLeft, isRunning, isGameOver, wpm, accuracy, restart } =
     useTypingGame({
-      text: TEXT,
+      text: currentText,
       duration: DURATION,
       onKeyDown: playPressSound,
       onKeyUp: playReleaseSound,
@@ -36,6 +43,16 @@ export default function TypingTest() {
   const { cursorPos, containerRef, setCharRef } = useCursorPosition(
     typed.length,
   );
+
+  const handleRestart = () => {
+    restart();
+  };
+
+  const handleTextChange = () => {
+    const nextIndex = (textIndex + 1) % TEXT_PRESETS.length;
+    setTextIndex(nextIndex);
+    restart();
+  };
 
   return (
     <div className="space-y-4 text-xl sm:text-2xl">
@@ -49,7 +66,7 @@ export default function TypingTest() {
                 aria-label="Restart"
                 onMouseDown={(e) => {
                   e.preventDefault();
-                  restart();
+                  handleRestart();
                 }}>
                 <RotateCcw />
               </Button>
@@ -105,7 +122,7 @@ export default function TypingTest() {
             }}
           />
         )}
-        {TEXT.split("").map((char, i) => (
+        {currentText.split("").map((char, i) => (
           <span
             key={i}
             ref={setCharRef(i)}
@@ -120,13 +137,38 @@ export default function TypingTest() {
           </span>
         ))}
       </p>
-      <div
-        className={`flex justify-end gap-4 transition-opacity ${
-          isRunning ? "opacity-100" : "pointer-events-none opacity-0"
-        }`}>
-        <span className="text-muted-foreground tabular-nums">{timeLeft}s</span>
-        <span className="text-muted-foreground tabular-nums">{accuracy}%</span>
-        <span className="text-muted-foreground tabular-nums">{wpm} WPM</span>
+      <div className="flex items-center justify-between">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Change text"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                handleTextChange();
+              }}>
+              <FileText />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Change text</TooltipContent>
+        </Tooltip>
+        <div
+          className={`flex gap-4 transition-opacity ${
+            isRunning || isGameOver
+              ? "opacity-100"
+              : "pointer-events-none opacity-0"
+          }`}>
+          {isRunning && (
+            <span className="text-muted-foreground tabular-nums">
+              {timeLeft}s
+            </span>
+          )}
+          <span className="text-muted-foreground tabular-nums">
+            {accuracy}%
+          </span>
+          <span className="text-muted-foreground tabular-nums">{wpm} WPM</span>
+        </div>
       </div>
     </div>
   );
