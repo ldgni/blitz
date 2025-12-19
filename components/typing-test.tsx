@@ -78,6 +78,21 @@ export default function TypingTest() {
               <Button
                 variant="ghost"
                 size="icon"
+                aria-label="Change text"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  handleTextChange();
+                }}>
+                <FileText />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Change text</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
                 aria-label={soundEnabled ? "Mute sounds" : "Unmute sounds"}
                 onMouseDown={(e) => {
                   e.preventDefault();
@@ -137,38 +152,19 @@ export default function TypingTest() {
           </span>
         ))}
       </p>
-      <div className="flex items-center justify-between">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Change text"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                handleTextChange();
-              }}>
-              <FileText />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Change text</TooltipContent>
-        </Tooltip>
-        <div
-          className={`flex gap-4 transition-opacity ${
-            isRunning || isGameOver
-              ? "opacity-100"
-              : "pointer-events-none opacity-0"
-          }`}>
-          {isRunning && (
-            <span className="text-muted-foreground tabular-nums">
-              {timeLeft}s
-            </span>
-          )}
+      <div
+        className={`flex justify-end gap-4 transition-opacity ${
+          isRunning || isGameOver
+            ? "opacity-100"
+            : "pointer-events-none opacity-0"
+        }`}>
+        {isRunning && (
           <span className="text-muted-foreground tabular-nums">
-            {accuracy}%
+            {timeLeft}s
           </span>
-          <span className="text-muted-foreground tabular-nums">{wpm} WPM</span>
-        </div>
+        )}
+        <span className="text-muted-foreground tabular-nums">{accuracy}%</span>
+        <span className="text-muted-foreground tabular-nums">{wpm} WPM</span>
       </div>
     </div>
   );
